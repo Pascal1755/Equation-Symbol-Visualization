@@ -1,7 +1,6 @@
 import re
 
 def graphByEquals1(Text):
-
 #    listOfEquations = ["albatross=bluejay+cuckoo", "cuckoo = bluejay+duck",
 #                       "duck = egret^9", "bluejay=8", "egret=4", "raven=2*crow"]
 
@@ -56,6 +55,8 @@ def graphByEquals2(Text):
 
     # strip whitespace and remove blank entries
     for k, eq in enumerate(listOfEquations):
+        eq.strip()
+        eq.replace("\t","")
         listOfEquations[k]= eq.replace(" ","")
         #print(len(listOfEquations[k]))
     while ('' in listOfEquations):
@@ -79,8 +80,27 @@ def graphByEquals2(Text):
                 and result[0].find(">") == -1 and result[1].find("<") == -1 \
                 and result[1].find(">") == -1):
 
-            LHS = re.findall(r'\w+', result[0])
-            RHS = re.findall(r'\w+', result[1])
+            #LHS = re.findall(r'\w+', result[0])
+            #RHS = re.findall(r'\w+', result[1])
+            foundLeft = re.findall(r'\w+', result[0])
+            LHS=[]
+            for expr in foundLeft:
+                leftMatch = re.match(r'^[a-zA-Z]+[0-9a-zA-Z_]*',expr)
+                if (leftMatch is None \
+                        and re.match(r'^[0-9]+[a-zA-Z_]+', expr) is not None):
+                    inputError = ValueError('illegal expression:\n' + expr)
+                elif (leftMatch is not None):
+                    LHS.append(leftMatch.group(0))
+
+            foundRight = re.findall(r'\w+', result[1])
+            RHS=[]
+            for expr in foundRight:
+                rightMatch = re.match(r'^[a-zA-Z]+[0-9a-zA-Z_]*',expr)
+                if (rightMatch is None \
+                        and re.match(r'^[0-9]+[a-zA-Z_]+', expr) is not None):
+                    inputError = ValueError('illegal expression:\n' + expr)
+                elif (rightMatch is not None):
+                    RHS.append(rightMatch.group(0))
 
             if (LHS and RHS):
 
@@ -90,7 +110,6 @@ def graphByEquals2(Text):
                     for k in range(1,len(LHS)):
                         RHS.append(LHS[k])
                     del LHS[1:len(LHS)]
-
 
                 if (LHS[0] not in graphOfLeft):
                     graphOfLeft[LHS[0]] = RHS
