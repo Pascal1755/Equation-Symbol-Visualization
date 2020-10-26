@@ -23,16 +23,16 @@ from graphFromText.graphByEquals import graphByEquals2, graphByEquals3
 # entered by the user. This needs further development.
 
 app = dash.Dash(__name__, suppress_callback_exceptions=True)
+server = app.server  #used to tell gunicorn where the variable name can be found
 
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
     html.Div(id='page-content')
 ])
 
-#global in scope? this is sanctioned by dash.plotly.com, but not recommended?
+#global in scope which can be problematic. This is sanctioned by dash.plotly.com
 #see page https://dash.plotly.com/sharing-data-between-callbacks
 myText = 'y = 3*x+u\nz = 4*x + 8*y + 9*v\nw=z+y^9+v\n'
-
 def graphEquations(myText):
 
     graphOfLeft, err = graphByEquals2(myText)
@@ -51,15 +51,16 @@ def graphEquations(myText):
     ################### assign positions in x-y plane in units pixels by each symbol/key ###############
     x_pos_by_key=dict() #dictionary to lookup x position by symbol key
     y_pos_by_key=dict() #dictionary to lookup y position by symbol key
-    row=len(graphOfLeft)*max([len(item) for item in graphOfLeft.values()])
+    #row=len(graphOfLeft)*max([len(item) for item in graphOfLeft.values()])
+    row = 20
     leftCol=0
-    rightCol=4
+    rightCol=6
     for key in graphOfLeft:
-        leftCol=1-leftCol
-        row-=1
+        leftCol=1-leftCol  #toggle the leftCol value between 0 and 1
+        row-=1  #move down one row with each new key
         if ( key not in x_pos_by_key and key not in y_pos_by_key ):
-            x_pos_by_key[key]=0.5*leftCol+(0.1*row%2)#+0.2*random.rand()
-            y_pos_by_key[key]=row+0.05*random.rand()
+            x_pos_by_key[key]=(leftCol-0.5)+1+(0.1*row%2)
+            y_pos_by_key[key]=row+0.1*random.rand()
         for k, sym in enumerate(graphOfLeft[key]):
             if ( (sym not in x_pos_by_key) and
                     (sym not in y_pos_by_key) ):

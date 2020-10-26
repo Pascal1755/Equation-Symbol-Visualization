@@ -1,26 +1,37 @@
 # Equation Symbol Visualization
 
-Equation Symbol Visualization is a [dash app](dash.plotly.com) created to create a visual representation of information flow for 
+Equation Symbol Visualization is a [__dash app__](dash.plotly.com) created to create a visual representation of information flow for 
 systems of equations. It is presumed that the leftmost symbol on the left hand side of the equation represents 
 assignment.
 
-## Local Installation
+## Local Installation in a Debian based Linux distribution
 
 Clone the project using Git.
 
-Create a virtual environment.
+Create a virtual environment from within the Equation-Symbol-Visualization folder.
+'''bash
+(virtualenv)<SomePC>$ pip3 install virtualenv (if not installed, use sudo apt install python3-pip)
+(virtualenv)<SomePC>$ mkdir virtualenv
+(virtualenv)<SomePC>$ python3 -m virtualenv virtualenv
+(virtualenv)<SomePC>$ source ./virtualenv/bin/activate
+'''
 
-Use the package manager [pip](https://pip.pypa.io/en/stable/) to install dash and numpy.
-
+Use the package manager [__pip__](https://pip.pypa.io/en/stable/) to install dash and numpy.
 ```bash
-pip install dash
-pip install numpy
+(virtualenv)<SomePC>$ pip3 install dash
+(virtualenv)<SomePC>$ pip3 install plotly
+(virtualenv)<SomePC>$ pip3 install numpy
+(virtualenv)<SomePC>$ pip3 install gunicorn
 ```
 Alternatively, one may use the popular method shown below.
 ```bash
-pip install -r requirements.txt
+(virtualenv)<SomePC>$ pip3 install -r requirements.txt
 ```
-Run the application.py using python 3.5 or above.
+Run the application.py using gunicorn using python 3.7 or above.
+```bash
+(virtualenv)<SomePC>$ gunicorn --workers=2 application:server
+```
+Note that the '--workers=2' will allow you to run 2 instances of the webpage.
 
 Please note that full compatibility versions is not known at the time, but it was originally written with Python 3.7.
 
