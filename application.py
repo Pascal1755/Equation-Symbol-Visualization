@@ -22,10 +22,14 @@ from graphFromText.graphByEquals import graphByEquals2, graphByEquals3
 # The graphByEquals2 function creates a graph from the equations
 # entered by the user. This needs further development.
 
-app = dash.Dash(__name__, suppress_callback_exceptions=True)
-server = app.server  #used to tell gunicorn where the variable name can be found
+my_app = dash.Dash(__name__, suppress_callback_exceptions=True)
+app = my_app.server  #used to tell gunicorn where the $(VARIABLE_NAME) can be found,
+                     #in this case, it is "app". Supposedly, this is a server?
 
-app.layout = html.Div([
+colors = {'background': '#111111','text': '#7FDBFF'}
+
+my_app.layout = html.Div(style={'backgroundColor': colors['background']},
+    children = [
     dcc.Location(id='url', refresh=False),
     html.Div(id='page-content')
 ])
@@ -52,14 +56,14 @@ def graphEquations(myText):
     x_pos_by_key=dict() #dictionary to lookup x position by symbol key
     y_pos_by_key=dict() #dictionary to lookup y position by symbol key
     #row=len(graphOfLeft)*max([len(item) for item in graphOfLeft.values()])
-    row = 20
+    row = 21 #dash will automatically resize the graph, so negative row #'s are ok
     leftCol=0
-    rightCol=6
+    rightCol=5
     for key in graphOfLeft:
         leftCol=1-leftCol  #toggle the leftCol value between 0 and 1
         row-=1  #move down one row with each new key
         if ( key not in x_pos_by_key and key not in y_pos_by_key ):
-            x_pos_by_key[key]=(leftCol-0.5)+1+(0.1*row%2)
+            x_pos_by_key[key]=(leftCol-0.5)+1+0.1*(row%2)
             y_pos_by_key[key]=row+0.1*random.rand()
         for k, sym in enumerate(graphOfLeft[key]):
             if ( (sym not in x_pos_by_key) and
@@ -117,32 +121,48 @@ def graphEquations(myText):
                             )}
     return figure
 
-index_page = html.Div([
-    dcc.Link('Equation Symbol Visualization', href='/page-1'),
-    html.Br(),
-    dcc.Link('How to use Equation Symbol Visualization', href='/page-2'),
+index_page = html.Div(id='index-page',
+                      style={'backgroundColor': colors['background']}, \
+        children = [
+        dcc.Link(id='P1-link',children='Equation Symbol Visualization', \
+            href='/page-1', style={'color': colors['text']}),
+        html.Br(),
+        dcc.Link(id='P2-link', children='How to use Equation Symbol Visualization',
+                 href='/page-2', style={'color': colors['text']})
 ])
 
-page_1_layout = html.Div([
-    html.H1('Equation Symbol Visualization'),
-    html.H2("Write out some equations in the text box"),
+page_1_layout = html.Div(id='page1',style={'backgroundColor': colors['background']},
+    children = [
+    html.H1(id='page1-H1',children='Equation Symbol Visualization',
+            style={'color':colors['text']}),
+    html.H2(id='page1-H2',children="Write out some equations in the text box",
+            style = {'color': colors['text']}),
     dcc.Textarea(id='page-1-input', value=myText,
-                 style={'width':'100%', 'height':200},),
+                 style={'width': '100%', 'height': 200, 'color': colors['text'],
+                        'backgroundColor': colors['background']}),
     ############## Display Graph in JSON / Python dict ################
-    html.Div(id='page-1-content', style={'whiteSpace': 'pre-line'}),
+    html.Div(id='page-1-content', style={'whiteSpace': 'pre-line','color': colors['text']}),
     html.Br(),
     ############## Graph of the graph here ############################
     dcc.Graph(id='page-1-graph', figure=graphEquations(myText)),
+    ############## Light or Dark Theme Selector #######################
+    html.Br(),
+    dcc.RadioItems(
+        id='light-dark-theme',
+        options=[{'label': i, 'value': i} for i in ['Light', 'Dark']],
+        value='Dark',
+        labelStyle={'display': 'inline-block', 'color': colors['text']}
+        ),
     ############## Links elsewhere ####################################
     html.Br(),
-    dcc.Link('How to use Equation Symbol Visualization', href='/page-2'),
+    dcc.Link(id='page1-link1',children='How to use Equation Symbol Visualization', href='/page-2',
+             style={'color': colors['text']}),
     html.Br(),
-    dcc.Link('Go back to home', href='/'),
-
+    dcc.Link(id='page1-link2',children='Go back to home', href='/',
+             style={'color': colors['text']})
 ])
 
-
-@app.callback(dash.dependencies.Output('page-1-content', 'children'),
+@my_app.callback(dash.dependencies.Output('page-1-content', 'children'),
               [dash.dependencies.Input('page-1-input', 'value')])
 def page_1_text(input_value):
     myText = input_value
@@ -152,11 +172,27 @@ def page_1_text(input_value):
     else:
         return 'There was an error: \n{}'.format(str(err.args[0]))
 
-@app.callback(dash.dependencies.Output('page-1-graph','figure'),
-              [dash.dependencies.Input('page-1-input','value')])
-def update_graph(input_value):
+@my_app.callback(dash.dependencies.Output('page-1-graph','figure'),
+              [dash.dependencies.Input('page-1-input','value'),
+               dash.dependencies.Input('light-dark-theme','value')])
+def update_graph(input_value,lightOrDarkSelection):
     myText = input_value
-    return graphEquations(input_value)
+    myFig=graphEquations(myText)
+    ############### Graph Color Update ###############################
+    if (lightOrDarkSelection == 'Light'):
+        localColors = {'background': '#FFFFFF',
+                  'text': '#111111'}
+    else:
+        localColors = {'background': '#111111',
+                  'text': '#7FDBFF'}
+
+    myFig['layout']['plot_bgcolor']=localColors['background']
+    myFig['layout']['paper_bgcolor']=localColors['background']
+    myFig['layout']['font_color']=localColors['text']
+    for arrow in myFig['layout']['annotations']:
+        arrow['arrowcolor']=localColors['text']
+
+    return myFig
 
 how_to_markdown_text = '''
 ### Description
@@ -223,29 +259,23 @@ Utilizing the graphical representation of a system of equations can be helpful f
 relations between symbols, sub-systems of equations and identifying unnecessary equations.
 '''
 
-page_2_layout = html.Div([
-    html.H1('How to use Equation Symbol Visualization'),
-#    dcc.RadioItems(
-#        id='page-2-radios',
-#        options=[{'label': i, 'value': i} for i in ['Orange', 'Blue', 'Red']],
-#        value='Orange'
-#    ),
-#    html.Div(id='page-2-content'),
-    dcc.Markdown(children=how_to_markdown_text),
+page_2_layout = html.Div(style={'backgroundColor': colors['background']},
+    children = [
+    html.H1(id='page2-H1',children='How to use Equation Symbol Visualization',
+            style={'color': colors['text']}),
+    dcc.Markdown(id='page2-MD', children=how_to_markdown_text,
+                 style={'color': colors['text']}),
     html.Br(),
-    dcc.Link('Go to Equation Symbol Visualization', href='/page-1'),
+    dcc.Link(id='page2-link1',children='Go to Equation Symbol Visualization',
+             href='/page-1',
+             style={'color': colors['text']}),
     html.Br(),
-    dcc.Link('Go back to home', href='/')
+    dcc.Link(id='page2-link2',children='Go back to home', href='/',
+             style={'color': colors['text']})
 ])
 
-#@app.callback(dash.dependencies.Output('page-2-content', 'children'),
-#              [dash.dependencies.Input('page-2-radios', 'value')])
-#def page_2_radios(value):
-#    return 'You have selected "{}"'.format(value)
-
-
 # Update the index
-@app.callback(dash.dependencies.Output('page-content', 'children'),
+@my_app.callback(dash.dependencies.Output('page-content', 'children'),
               [dash.dependencies.Input('url', 'pathname')])
 def display_page(pathname):
     if pathname == '/page-1':
@@ -254,8 +284,35 @@ def display_page(pathname):
         return page_2_layout
     else:
         return index_page
-    # You could also return a 404 "URL not found" page here
+# You could also return a 404 "URL not found" page here
 
+@my_app.callback([dash.dependencies.Output('page1-H1','style'),
+               dash.dependencies.Output('page1-H2','style'),
+               dash.dependencies.Output('page-1-input','style'),
+               dash.dependencies.Output('page-1-content','style'),
+               dash.dependencies.Output('page1','style'),
+               dash.dependencies.Output('page1-link1','style'),
+               dash.dependencies.Output('page1-link2','style'),
+               dash.dependencies.Output('light-dark-theme','style')],
+              [dash.dependencies.Input('light-dark-theme','value')])
+def lightDarkSelector(lightOrDarkSelection):
+    global colors #strange that Dash needs this
+    if (lightOrDarkSelection == 'Light'):
+        localColors = {'background': '#FFFFFF',
+                  'text': '#111111'}
+    else:
+        localColors = {'background': '#111111',
+                  'text': '#7FDBFF'}
+    colors=localColors  #strange artifact of dash,
+                        #does this actually update the global colors?
+    localStyle = {'backgroundColor': localColors['background'],
+                  'color': localColors['text']}
+    localStyles = [localStyle for k in range(0, 8)]
+    ############### Handle special cases #############################
+    localStyles[2]={'width': '100%', 'height': 200,
+                    'color': localColors['text'],
+                    'backgroundColor': localColors['background']}
+    return localStyles
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    my_app.run_server(debug=True)

@@ -27,9 +27,9 @@ Alternatively, one may use the popular method shown below.
 ```bash
 (virtualenv)<SomePC>$ pip3 install -r requirements.txt
 ```
-Run the application.py using gunicorn using python 3.7 or above.
+Run the application.py using python 3.7 or above or use gunicorn.
 ```bash
-(virtualenv)<SomePC>$ gunicorn --workers=2 application:server
+(virtualenv)<SomePC>$ gunicorn --workers=2 application:app
 ```
 Note that the '--workers=2' will allow you to run 2 instances of the webpage.
 
