@@ -1,20 +1,25 @@
 # Equation Symbol Visualization
 
-Equation Symbol Visualization is a [__dash app__](dash.plotly.com) created to create a visual representation of information flow for 
+Equation Symbol Visualization is a [__dash app__](http://dash.plotly.com) created to create a visual representation of information flow for 
 systems of equations. It is presumed that the leftmost symbol on the left hand side of the equation represents 
 assignment.
+
+## Website Demo
+A demo is currently being hosted very slowly at [__eqsymviz.azurewebsites.net__](http://eqsymviz.azurewebsites.net/).
+_Please be patient with the website as it can take up to 3 or 4 minutes to load._
 
 ## Local Installation in a Debian based Linux distribution
 
 Clone the project using Git.
 
 Create a virtual environment from within the Equation-Symbol-Visualization folder.
-'''bash
-(virtualenv)<SomePC>$ pip3 install virtualenv (if not installed, use sudo apt install python3-pip)
-(virtualenv)<SomePC>$ mkdir virtualenv
-(virtualenv)<SomePC>$ python3 -m virtualenv virtualenv
-(virtualenv)<SomePC>$ source ./virtualenv/bin/activate
-'''
+```bash
+<SomePC>$ pip3 install virtualenv (if not installed, use sudo apt install python3-pip)
+<SomePC>$ mkdir virtualenv
+<SomePC>$ python3 -m virtualenv virtualenv
+<SomePC>$ source ./virtualenv/bin/activate
+(virtualenv)<SomePC>$ 
+```
 
 Use the package manager [__pip__](https://pip.pypa.io/en/stable/) to install dash and numpy.
 ```bash

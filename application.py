@@ -1,14 +1,15 @@
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-import plotly.graph_objects as go
-from numpy import random
-from graphFromText.graphByEquals import graphByEquals2, graphByEquals3
+#import plotly.graph_objects as go
+#from numpy import random
+from graphFromText.graphByEquals import graphByEquals2, graphByEquals3, graphByEquals4
+from graphFromText.graphEquations import graphEquations
 
 # This is a dash application created by Pascal Nespeca on 9/9/2020
 # created in order to help visualize systems of equations. It's initial
 # intent is to facilitate tracking dependencies of Ordinary Differential
-# Equations. The Python packages Plotly and Dash are used to publish the
+# Equations (ODE). The Python packages Plotly and Dash are used to publish the
 # parsed equations.
 #
 # Portions of this code are borrowed from Jiahui Hwang's project
@@ -26,7 +27,7 @@ my_app = dash.Dash(__name__, suppress_callback_exceptions=True)
 app = my_app.server  #used to tell gunicorn where the $(VARIABLE_NAME) can be found,
                      #in this case, it is "app". Supposedly, this is a server?
 
-colors = {'background': '#111111','text': '#7FDBFF'}
+colors = {'background': '#FFFFFF','text': '#111111'}
 
 my_app.layout = html.Div(style={'backgroundColor': colors['background']},
     children = [
@@ -34,148 +35,89 @@ my_app.layout = html.Div(style={'backgroundColor': colors['background']},
     html.Div(id='page-content')
 ])
 
-#global in scope which can be problematic. This is sanctioned by dash.plotly.com
-#see page https://dash.plotly.com/sharing-data-between-callbacks
-myText = 'y = 3*x+u\nz = 4*x + 8*y + 9*v\nw=z+y^9+v\n'
-def graphEquations(myText):
+# myText is global in scope, which can be problematic. This is actually
+# allowed by dash.plotly.com
+# see page https://dash.plotly.com/sharing-data-between-callbacks
+myText = 'y = 3*x+u\nz = 4*x + 8*y + 9*v\nw = z+y^2+v\n'
+HomeMD='''
+From the following equations:  
+y = 3\*x+u  
+z = 4\*x + 8\*y + 9\*v  
+w = z+y^2+v
 
-    graphOfLeft, err = graphByEquals2(myText)
-
-    ###### if there is an error with equations in myText, then return blank figure ########
-    if (err is not None):
-        return {"data": [go.Scatter()],
-                "layout": go.Layout(title='Equation Symbol Visualization',
-                                    showlegend=False, hovermode='closest',
-                                    margin={'b': 40, 'l': 40, 'r': 40, 't': 40},
-                                    xaxis={'showgrid': False, 'zeroline': False, 'showticklabels': False},
-                                    yaxis={'showgrid': False, 'zeroline': False, 'showticklabels': False},
-                                    height=300,
-                                    )}
-
-    ################### assign positions in x-y plane in units pixels by each symbol/key ###############
-    x_pos_by_key=dict() #dictionary to lookup x position by symbol key
-    y_pos_by_key=dict() #dictionary to lookup y position by symbol key
-    #row=len(graphOfLeft)*max([len(item) for item in graphOfLeft.values()])
-    row = 21 #dash will automatically resize the graph, so negative row #'s are ok
-    leftCol=0
-    rightCol=5
-    for key in graphOfLeft:
-        leftCol=1-leftCol  #toggle the leftCol value between 0 and 1
-        row-=1  #move down one row with each new key
-        if ( key not in x_pos_by_key and key not in y_pos_by_key ):
-            x_pos_by_key[key]=(leftCol-0.5)+1+0.1*(row%2)
-            y_pos_by_key[key]=row+0.1*random.rand()
-        for k, sym in enumerate(graphOfLeft[key]):
-            if ( (sym not in x_pos_by_key) and
-                    (sym not in y_pos_by_key) ):
-                x_pos_by_key[sym]=rightCol+0.2*(row%2)
-                y_pos_by_key[sym]=row+0.2*(row%2)
-                row-=1
-
-    ###################### plot out all symbols as nodes on x-y plane ##################################
-    traceRecode = []
-    node_trace = go.Scatter(x=[], y=[], hovertext=[], text=[], mode='markers+text',
-                            textposition="bottom center",
-                            hoverinfo="text", marker={'size': 20, 'color': 'LightSkyBlue'})
-    for node in x_pos_by_key:
-        hovertext = "Symbol: " + node
-        text = node
-        node_trace['x'] += tuple([x_pos_by_key[node]])
-        node_trace['y'] += tuple([y_pos_by_key[node]])
-        node_trace['hovertext'] += tuple([hovertext])
-        node_trace['text'] += tuple([text])
-
-    traceRecode.append(node_trace)
-
-    ############ Connect the dots (nodes), plot out lines between nodes/symbols on x-y plane ###########
-    listOfEdges=[]
-    for key in graphOfLeft:
-        x1 = x_pos_by_key[key]
-        y1 = y_pos_by_key[key]
-        for k, sym in enumerate(graphOfLeft[key]):
-            x0 = x_pos_by_key[sym]
-            y0 = y_pos_by_key[sym]
-            listOfEdges.append({'from':sym,'to':key})
-            trace = go.Scatter(x=tuple([x0, x1, None]), y=tuple([y0, y1, None]),
-                               mode='lines',
-                               line={'width': 2},
-                               opacity=0.25)
-            traceRecode.append(trace)
-
-    ################################### produce figure from traceRecode ################################
-    listOfArrows=[dict(ax=(x_pos_by_key[edge['from']] + x_pos_by_key[edge['to']]) / 2,
-                       ay=(y_pos_by_key[edge['from']] + y_pos_by_key[edge['to']]) / 2,
-                       axref='x', ayref='y',
-                       x=(x_pos_by_key[edge['to']] * 3 + x_pos_by_key[edge['from']]) / 4,
-                       y=(y_pos_by_key[edge['to']] * 3 + y_pos_by_key[edge['from']]) / 4,
-                       xref='x', yref='y', showarrow=True, arrowhead=3, arrowsize=4,
-                       arrowwidth=1, opacity=1) for edge in listOfEdges]
-
-    figure = {"data": traceRecode,
-              "layout": go.Layout(title='Equation Symbol Visualization', showlegend=False, hovermode='closest',
-                                  margin={'b': 40, 'l': 40, 'r': 40, 't': 40},
-                                  xaxis={'showgrid': False, 'zeroline': False, 'showticklabels': False},
-                                  yaxis={'showgrid': False, 'zeroline': False, 'showticklabels': False},
-                                  height=len(graphOfLeft)*100+100,
-                                  annotations=listOfArrows
-                            )}
-    return figure
-
+Comes the visualization:
+'''
 index_page = html.Div(id='index-page',
                       style={'backgroundColor': colors['background']}, \
         children = [
-        dcc.Link(id='P1-link',children='Equation Symbol Visualization', \
+        dcc.Link(id='P1-link',children='Use Equation Symbol Visualization Tool', \
             href='/page-1', style={'color': colors['text']}),
         html.Br(),
         dcc.Link(id='P2-link', children='How to use Equation Symbol Visualization',
-                 href='/page-2', style={'color': colors['text']})
+                 href='/page-2', style={'color': colors['text']}),
+        html.Hr(),
+        dcc.Markdown(id='Home-Eq1', children=HomeMD, style={'color': colors['text']}),
+        html.Br(),
+        html.Img(src=my_app.get_asset_url('graph1-white.png'))
 ])
 
 page_1_layout = html.Div(id='page1',style={'backgroundColor': colors['background']},
     children = [
+    ############## Links elsewhere ####################################
+    dcc.Link(id='page1-link1', children='How to use Equation Symbol Visualization', href='/page-2',
+                 style={'color': colors['text']}),
+    html.Br(),
+    dcc.Link(id='page1-link2', children='Go back to home', href='/',
+                 style={'color': colors['text']}),
+    html.Hr(),
     html.H1(id='page1-H1',children='Equation Symbol Visualization',
             style={'color':colors['text']}),
-    html.H2(id='page1-H2',children="Write out some equations in the text box",
+    html.H2(id='page1-H2',children="Write out some equations in the text box below",
             style = {'color': colors['text']}),
     dcc.Textarea(id='page-1-input', value=myText,
                  style={'width': '100%', 'height': 200, 'color': colors['text'],
                         'backgroundColor': colors['background']}),
-    ############## Display Graph in JSON / Python dict ################
-    html.Div(id='page-1-content', style={'whiteSpace': 'pre-line','color': colors['text']}),
     html.Br(),
+    html.Button(id='submit-val', n_clicks=0, children='Submit'),
+    html.Hr(),
+    ############## Display Graph in JSON / Python dict ################
+    html.Div(id='page-1-content',
+             style={'whiteSpace': 'pre-line','color': colors['text']}), #new
+    html.Hr(),
     ############## Graph of the graph here ############################
     dcc.Graph(id='page-1-graph', figure=graphEquations(myText)),
+    html.Hr(),
+    ############## Options ############################################
+    html.H4(id='page1-H4', children="Options", style={'color': colors['text']}),
+    html.Br(),
     ############## Light or Dark Theme Selector #######################
-    html.Br(),
-    dcc.RadioItems(
-        id='light-dark-theme',
+    dcc.RadioItems(id='light-dark-theme',
         options=[{'label': i, 'value': i} for i in ['Light', 'Dark']],
-        value='Dark',
-        labelStyle={'display': 'inline-block', 'color': colors['text']}
-        ),
-    ############## Links elsewhere ####################################
-    html.Br(),
-    dcc.Link(id='page1-link1',children='How to use Equation Symbol Visualization', href='/page-2',
-             style={'color': colors['text']}),
-    html.Br(),
-    dcc.Link(id='page1-link2',children='Go back to home', href='/',
-             style={'color': colors['text']})
+        value='Light',
+        labelStyle={'display': 'inline-block'},
+        style={'color': colors['text'], 'backgroundColor': colors['background']})
 ])
 
+#[dash.dependencies.Input('page-1-input', 'value')])
 @my_app.callback(dash.dependencies.Output('page-1-content', 'children'),
-              [dash.dependencies.Input('page-1-input', 'value')])
-def page_1_text(input_value):
+                [dash.dependencies.Input('submit-val', 'n_clicks')], #new
+                [dash.dependencies.State('page-1-input', 'value')])  #new
+def page_1_text(n_clicks, input_value):
     myText = input_value
     graphOfLeft, err = graphByEquals2(input_value)
     if (err is None):
-        return 'The graph in python dictionary / JSON form: \n{}'.format(str(graphOfLeft))
+        return 'The graph in python dictionary / JSON form: {}'.format('\n' + str(graphOfLeft))
     else:
-        return 'There was an error: \n{}'.format(str(err.args[0]))
+        return 'There was an error: {}'.format('\n' + str(err.args[0]))
 
-@my_app.callback(dash.dependencies.Output('page-1-graph','figure'),
-              [dash.dependencies.Input('page-1-input','value'),
-               dash.dependencies.Input('light-dark-theme','value')])
-def update_graph(input_value,lightOrDarkSelection):
+
+'''[dash.dependencies.Input('page-1-input', 'value'),
+ dash.dependencies.Input('light-dark-theme', 'value')]'''
+@my_app.callback(dash.dependencies.Output('page-1-graph', 'figure'),
+                 [dash.dependencies.Input('submit-val', 'n_clicks'),
+                  dash.dependencies.Input('light-dark-theme', 'value')], #new
+                 [dash.dependencies.State('page-1-input', 'value')]) #new
+def update_graph(n_clicks,lightOrDarkSelection,input_value):
     myText = input_value
     myFig=graphEquations(myText)
     ############### Graph Color Update ###############################
@@ -196,7 +138,7 @@ def update_graph(input_value,lightOrDarkSelection):
 
 how_to_markdown_text = '''
 ### Description
-Equation Symbol Visualization is a [dash app](dash.plotly.com) created to create a visual representation of information 
+Equation Symbol Visualization is a [__dash app__](http://dash.plotly.com) created to create a visual representation of information 
 flow for systems of equations. It is presumed that the leftmost symbol on the left hand side of the equation represents 
 assignment.
 
@@ -209,7 +151,7 @@ Enter equations with one symbol on the left hand side for assignment and one or 
 For example, if the following were entered in the text box:  
 y = 3\*x+u  
 z = 4\*x + 8\*y + 9\*v  
-w = z+y^9+v  
+w = z+y^2+v  
 v = -y+x  
 
 The following graph data structure as a python dictionary / JSON representation would be produced:  
@@ -225,7 +167,9 @@ plotly packages. Where the visualization would show the following:
 ### Notes
 
 * Symbols such as '9bears' are considered illegal since the first character contains a number. However, the symbol 
-'bears9' is perfectly acceptable
+'bears9' is perfectly acceptable.
+
+* There is an options section at the bottom of the web tool that allows a user to select a light or dark theme.
 
 * In the current implementation, note that in the event that more than one symbol appears on the left hand side, 
 it will be treated as if the leftmost symbol were used for assignment and the other symbol(s) were moved to the 
@@ -261,17 +205,16 @@ relations between symbols, sub-systems of equations and identifying unnecessary 
 
 page_2_layout = html.Div(style={'backgroundColor': colors['background']},
     children = [
+    dcc.Link(id='page2-link1', children='Use Equation Symbol Visualization Tool',
+             href='/page-1',style={'color': colors['text']}),
+    html.Br(),
+    dcc.Link(id='page2-link2', children='Go back to home', href='/',
+             style={'color': colors['text']}),
+    html.Hr(),
     html.H1(id='page2-H1',children='How to use Equation Symbol Visualization',
             style={'color': colors['text']}),
     dcc.Markdown(id='page2-MD', children=how_to_markdown_text,
-                 style={'color': colors['text']}),
-    html.Br(),
-    dcc.Link(id='page2-link1',children='Go to Equation Symbol Visualization',
-             href='/page-1',
-             style={'color': colors['text']}),
-    html.Br(),
-    dcc.Link(id='page2-link2',children='Go back to home', href='/',
-             style={'color': colors['text']})
+                 style={'color': colors['text']})
 ])
 
 # Update the index
@@ -288,6 +231,7 @@ def display_page(pathname):
 
 @my_app.callback([dash.dependencies.Output('page1-H1','style'),
                dash.dependencies.Output('page1-H2','style'),
+               dash.dependencies.Output('page1-H4','style'),
                dash.dependencies.Output('page-1-input','style'),
                dash.dependencies.Output('page-1-content','style'),
                dash.dependencies.Output('page1','style'),
@@ -307,9 +251,9 @@ def lightDarkSelector(lightOrDarkSelection):
                         #does this actually update the global colors?
     localStyle = {'backgroundColor': localColors['background'],
                   'color': localColors['text']}
-    localStyles = [localStyle for k in range(0, 8)]
+    localStyles = [localStyle for k in range(0, 9)]
     ############### Handle special cases #############################
-    localStyles[2]={'width': '100%', 'height': 200,
+    localStyles[3]={'width': '100%', 'height': 200,
                     'color': localColors['text'],
                     'backgroundColor': localColors['background']}
     return localStyles
