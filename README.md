@@ -12,7 +12,7 @@ _Please be patient with the website as it can take up to 3 or 4 minutes to load.
 
 Clone the project using Git.
 
-Create a virtual environment from within the Equation-Symbol-Visualization folder.
+Create a virtual environment from within the Equation-Symbol-Visualization folder.  
 ```bash
 <SomePC>$ pip3 install virtualenv (if not installed, use sudo apt install python3-pip)
 <SomePC>$ mkdir virtualenv
@@ -101,8 +101,9 @@ Utilizing the graphical representation of a system of equations can be helpful f
 relations between symbols, sub-systems of equations and identifying unnecessary equations.
 
 ## Code Snippet Citations
-Portions of this code are borrowed from [Jiahui Hwang's project](https://github.com/jhwang1992/network-visualization). Most notably, it borrows from the idea that the visualization
-of a graph data structure consists of nodes drawn as a scatter plot in plotly and the edges of the graph are drawn as lines.
+Portions of this code are borrowed from [Jiahui Wang's project](https://github.com/jhwang1992/network-visualization).
+Most notably, it borrows from the idea that the visualization of a graph data structure consists of nodes drawn as a 
+scatter plot in plotly and the edges of the graph are drawn as lines.
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
