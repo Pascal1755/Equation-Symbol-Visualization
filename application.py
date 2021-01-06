@@ -3,8 +3,8 @@ import dash_core_components as dcc
 import dash_html_components as html
 #import plotly.graph_objects as go
 #from numpy import random
-from graphFromText.graphByEquals import graphByEquals2, graphByEquals3, graphByEquals4
-from graphFromText.graphEquations import graphEquations
+from graphFromText.graphByEquals import graphByEquals2, graphByEqualsFxn1, graphByEquals3, graphByEquals4
+from graphFromText.graphEquations import graphEquations, graphEquationsWithFxn
 
 # This is a dash application created by Pascal Nespeca on 9/9/2020
 # created in order to help visualize systems of equations. It's initial
@@ -80,13 +80,6 @@ page_1_layout = html.Div(id='page1',style={'backgroundColor': colors['background
     html.Br(),
     html.Button(id='submit-val', n_clicks=0, children='Submit'),
     html.Hr(),
-    ############## Display Graph in JSON / Python dict ################
-    html.Div(id='page-1-content',
-             style={'whiteSpace': 'pre-line','color': colors['text']}), #new
-    html.Hr(),
-    ############## Graph of the graph here ############################
-    dcc.Graph(id='page-1-graph', figure=graphEquations(myText)),
-    html.Hr(),
     ############## Options ############################################
     html.H4(id='page1-H4', children="Options", style={'color': colors['text']}),
     html.Br(),
@@ -95,16 +88,36 @@ page_1_layout = html.Div(id='page1',style={'backgroundColor': colors['background
         options=[{'label': i, 'value': i} for i in ['Light', 'Dark']],
         value='Light',
         labelStyle={'display': 'inline-block'},
-        style={'color': colors['text'], 'backgroundColor': colors['background']})
+        style={'color': colors['text'], 'backgroundColor': colors['background']}),
+    html.Br(),
+    ############## New, added 1-4-2020 #######################
+    dcc.RadioItems(id='fxn-option',
+        options=[{'label': i, 'value': i} for i in ['Map symbols to functions',\
+                                                    'Do not map symbols to functions']],
+        value='Do not map symbols to functions',
+        labelStyle={'display': 'inline-block'},
+        style={'color': colors['text'], 'backgroundColor': colors['background']}),
+    html.Hr(),
+    ############## Graph of the graph here ############################
+    dcc.Graph(id='page-1-graph', figure=graphEquations(myText)),
+    ############## Display Graph in JSON / Python dict ################
+    html.Hr(),
+    html.Div(id='page-1-content',
+            style={'whiteSpace': 'pre-line', 'color': colors['text']})  # new
 ])
 
 #[dash.dependencies.Input('page-1-input', 'value')])
 @my_app.callback(dash.dependencies.Output('page-1-content', 'children'),
-                [dash.dependencies.Input('submit-val', 'n_clicks')], #new
+                [dash.dependencies.Input('submit-val', 'n_clicks'),
+                 dash.dependencies.Input('fxn-option','value')], #new
                 [dash.dependencies.State('page-1-input', 'value')])  #new
-def page_1_text(n_clicks, input_value):
+def page_1_text(n_clicks, fxnOptionSelection, input_value):
     myText = input_value
     graphOfLeft, err = graphByEquals2(input_value)
+    if (fxnOptionSelection == 'Do not map symbols to functions'):
+        graphOfLeft, err = graphByEquals2(input_value)
+    else:
+        graphOfLeft, err = graphByEqualsFxn1(input_value)
     if (err is None):
         return 'The graph in python dictionary / JSON form: {}'.format('\n' + str(graphOfLeft))
     else:
@@ -115,11 +128,15 @@ def page_1_text(n_clicks, input_value):
  dash.dependencies.Input('light-dark-theme', 'value')]'''
 @my_app.callback(dash.dependencies.Output('page-1-graph', 'figure'),
                  [dash.dependencies.Input('submit-val', 'n_clicks'),
-                  dash.dependencies.Input('light-dark-theme', 'value')], #new
+                  dash.dependencies.Input('light-dark-theme', 'value'),
+                  dash.dependencies.Input('fxn-option','value')], #new
                  [dash.dependencies.State('page-1-input', 'value')]) #new
-def update_graph(n_clicks,lightOrDarkSelection,input_value):
+def update_graph(n_clicks,lightOrDarkSelection,fxnOptionSelection,input_value):
     myText = input_value
-    myFig=graphEquations(myText)
+    if (fxnOptionSelection == 'Do not map symbols to functions'):
+        myFig=graphEquations(myText)
+    else:
+        myFig=graphEquationsWithFxn(myText)
     ############### Graph Color Update ###############################
     if (lightOrDarkSelection == 'Light'):
         localColors = {'background': '#FFFFFF',
@@ -191,9 +208,8 @@ right hand side. For example:
 
 ### Future Improvements
 Desired improvements would be as follows:
-* Support for functions inside equations, such as 'f' in z = x^2 + 6*f(x,y)
-* Visual representation for reflexive expressions used in coding statements, like x = x + 1
-* More meaningful support for multiple assignments on the left hand side 
+* Special visual representation for reflexive expressions used in coding statements, like x = x + 1
+* More options for multiple assignments on the left hand side 
 * Support for inequality statements, i.e. <=, >=
 * A user input to help identify unnecessary variables or unnecessary equations
 * Ambitiously, some form of support for LaTeX
@@ -237,7 +253,8 @@ def display_page(pathname):
                dash.dependencies.Output('page1','style'),
                dash.dependencies.Output('page1-link1','style'),
                dash.dependencies.Output('page1-link2','style'),
-               dash.dependencies.Output('light-dark-theme','style')],
+               dash.dependencies.Output('light-dark-theme','style'),
+               dash.dependencies.Output('fxn-option','style')],
               [dash.dependencies.Input('light-dark-theme','value')])
 def lightDarkSelector(lightOrDarkSelection):
     global colors #strange that Dash needs this
@@ -251,7 +268,7 @@ def lightDarkSelector(lightOrDarkSelection):
                         #does this actually update the global colors?
     localStyle = {'backgroundColor': localColors['background'],
                   'color': localColors['text']}
-    localStyles = [localStyle for k in range(0, 9)]
+    localStyles = [localStyle for k in range(0, 10)]
     ############### Handle special cases #############################
     localStyles[3]={'width': '100%', 'height': 200,
                     'color': localColors['text'],

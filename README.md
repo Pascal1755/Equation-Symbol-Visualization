@@ -34,11 +34,11 @@ Alternatively, one may use the popular method shown below.
 ```
 Run the application.py using python 3.7 or above or use gunicorn.
 ```bash
-(virtualenv)<SomePC>$ gunicorn --workers=2 application:app
+(virtualenv)<SomePC>$ gunicorn --workers=2 application:my_app
 ```
 Note that the '--workers=2' will allow you to run 2 instances of the webpage.
 
-Please note that full compatibility versions is not known at the time, but it was originally written with Python 3.7.
+Please note that compatibility of versions is not known at the time, but it was originally written with Python 3.8.5.
 
 ## Usage
 
@@ -89,9 +89,8 @@ right hand side. For example:
 
 ## Future Improvements
 Desired improvements would be as follows:
-* Support for functions inside equations, such as 'f' in z = x^2 + 6*f(x,y)
-* Visual representation for reflexive expressions used in coding statements, like x = x + 1
-* More meaningful support for multiple assignments on the left hand side 
+* Special visual representation for reflexive expressions used in coding statements, like x = x + 1
+* More options for multiple assignments on the left hand side 
 * Support for inequality statements, e.g. <=, >=
 * A user input to help identify unnecessary variables or unnecessary equations
 * Ambitiously, some form of support for LaTeX

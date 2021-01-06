@@ -293,7 +293,7 @@ def graphByEquals4(Text):
 ##################### Will map z = f(x,y) + u as {'z':['f','u'],'f':['x',y']}, figuratively ###############
 ##################### Note that the actual graph items are tuples, like ('f',4,'fxn',0,0) #################
 ##################### The tuples are the following format: (symbolName,character,type,fxnLevel,eqNum) #####
-def graphByEquals5(Text):
+def graphByEqualsFxn1(Text):
     listOfEquations = re.split(r'\n', Text)
 
     # strip whitespace and remove blank entries

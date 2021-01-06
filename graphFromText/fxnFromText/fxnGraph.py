@@ -634,7 +634,8 @@ def getRowMulti(myKey, symbolGraph, rowsByKey, farRow):
         if (len(maxList) >= 1):
             row = max(maxList)  #trying to get the maximum of a negative number
         else:
-            row = farRow  # this shouldn't happen?
+            row = farRow  # this can happen if fxn takes all args from earlier eq.
+            farRow -= 1  # new line, 1-4-2020
     else:
         row = farRow
     return row, farRow
@@ -647,14 +648,14 @@ the symbolGraph.
 def getRowsByKeyMulti(symbolGraph):
 
     rowsByKey = {}
-    myKeys = [leftSym for leftSym in list(symbolGraph.keys()) if leftSym[3] == -1]  # new code, 12-30-2020
+    leftKeys = [leftSym for leftSym in list(symbolGraph.keys()) if leftSym[3] == -1]  # new code, 12-30-2020
     row = 0  # unused, currently
     lvl = -1  # unused, currently
     farRow = 0
     #rowsByKey[myKeys[0]]=0
-    for myKey in myKeys:
+    for leftKey in leftKeys:
         rStack = []
-        rStack.append(myKey)  # new line, 12-31-2020
+        rStack.append(leftKey)  # new line, 12-31-2020
         #rowsByKey[myKey]=farRow  # new line, 12-31-2020
         # new call to rowsByKey, 12-31-2020
         rowsByKey[rStack[-1:][0]], farRow = getRowMulti(rStack[-1:][0],
@@ -664,6 +665,7 @@ def getRowsByKeyMulti(symbolGraph):
         #print(farRow, rStack[-1:][0])
         iter = 0
         stackNotEmpty = True
+        myKey = leftKey  # added on 1-4-2020 to clear bug
         #farRow = 0
         while (stackNotEmpty):
             child = True
@@ -684,7 +686,7 @@ def getRowsByKeyMulti(symbolGraph):
                             and item not in rowsByKey):
                         child = False
                         rStack.append(item)
-                if (k < N):
+                if (k < N and symbolGraph[myKey][k] in symbolGraph):  # added on 1-4-2020 to clear bug
                     myKey = symbolGraph[myKey][k]
                 else:
                     child = False
