@@ -34,7 +34,7 @@ Alternatively, one may use the popular method shown below.
 ```
 Run the application.py using python 3.7 or above or use gunicorn.
 ```bash
-(virtualenv)<SomePC>$ gunicorn --workers=2 application:my_app
+(virtualenv)<SomePC>$ gunicorn --workers=2 application:app
 ```
 Note that the '--workers=2' will allow you to run 2 instances of the webpage.
 
