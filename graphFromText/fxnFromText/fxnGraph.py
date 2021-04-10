@@ -68,7 +68,9 @@ def getFxnLeft(kk1,text):
     # characture is found and grabs string.
     kk2=kk1
     N=len(text) #new
-    while (kk2 >= 1 and (text[kk2 - 1]).isalnum()):
+    wordChars = ['_']  # for certain notation, any others to add?
+    while ( kk2 >= 1 and ( (text[kk2 - 1]).isalnum() \
+            or text[kk2-1] in wordChars) ):  #added wordChars on 4/9/2021
         kk2 -= 1
     if ( (text[kk2]).isalnum() ):
         fxnName = text[kk2:(kk1+1)]  # must add +1 for python string

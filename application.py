@@ -188,6 +188,8 @@ plotly packages. Where the visualization would show the following:
 
 * There is an options section at the bottom of the web tool that allows a user to select a light or dark theme.
 
+* There is also a new option to map symbols using functional notation, e.g. y = f(x).
+
 * In the current implementation, note that in the event that more than one symbol appears on the left hand side, 
 it will be treated as if the leftmost symbol were used for assignment and the other symbol(s) were moved to the 
 right hand side. For example:  
@@ -206,13 +208,16 @@ right hand side. For example:
    >* y, u and v would point to x
    >* v and y would point to z
 
+### Source Code
+
+* Source code can be found at [__Pascal's Git Hub repo__](https://github.com/Pascal1755/Equation-Symbol-Visualization)
+
 ### Future Improvements
 Desired improvements would be as follows:
 * Special visual representation for reflexive expressions used in coding statements, like x = x + 1
 * More options for multiple assignments on the left hand side 
 * Support for inequality statements, i.e. <=, >=
 * A user input to help identify unnecessary variables or unnecessary equations
-* Ambitiously, some form of support for LaTeX
 
 ### Usefulness
 Utilizing the graphical representation of a system of equations can be helpful from the standpoint of identifying

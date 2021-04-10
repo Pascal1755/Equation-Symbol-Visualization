@@ -309,6 +309,7 @@ def graphByEqualsFxn1(Text):
     for k, eq in enumerate(listOfEquations):
 
         result = re.split(r'={1}', eq)  # split into LHS and RHS by exactly one equals sign
+        inputError = None
 
         # Left Hand Side (LHS) is every word to the left of exactly one equals sign
         # Right Hand Side (RHS) is every word to the right of exactly one equals sign
@@ -364,8 +365,9 @@ def graphByEqualsFxn1(Text):
                 for k, left in enumerate(foundLeft):
                     leftHandLinesOfText.append(left)
                     rightHandLinesOfText.append(result[1])
-            else:
-                inputError = ValueError('incomplete equation expression found in line:\n' + eq)
+            #else statement commented out on 4/9/2021
+            #else:
+                #inputError = ValueError('incomplete equation expression found in line:\n' + eq)
         else:
             inputError = ValueError('non-equation expression found in line:\n' + eq)
 
