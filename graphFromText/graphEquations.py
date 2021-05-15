@@ -146,14 +146,31 @@ def graphEquationsWithFxn(myText):
     node_trace = go.Scatter(x=[], y=[], hovertext=[], text=[], mode='markers+text',
                             textposition="bottom center",
                             hoverinfo="text", marker={'size': 20, 'color': 'LightSkyBlue'})
+    # Older, prior to 4-19-2021
+    # for node in x_pos_by_key:
+    #     nodeSymbol = node[0]  # added, 1-4-2020
+    #     hovertext = "Symbol: " + nodeSymbol  # modified, 1-4-2020
+    #     text = nodeSymbol  # modified, 1-4-2020
+    #     node_trace['x'] += tuple([x_pos_by_key[node]])
+    #     node_trace['y'] += tuple([y_pos_by_key[node]])
+    #     node_trace['hovertext'] += tuple([hovertext])
+    #     node_trace['text'] += tuple([text])
+
+    # New, added 4-19-2021 to give textposition for symbols on LHS of equals sign
+    # Unfortunately, does not work as 'textposition' changes are applied to all nodes
     for node in x_pos_by_key:
         nodeSymbol = node[0]  # added, 1-4-2020
         hovertext = "Symbol: " + nodeSymbol  # modified, 1-4-2020
         text = nodeSymbol  # modified, 1-4-2020
+        lvl = node[3]
         node_trace['x'] += tuple([x_pos_by_key[node]])
         node_trace['y'] += tuple([y_pos_by_key[node]])
         node_trace['hovertext'] += tuple([hovertext])
         node_trace['text'] += tuple([text])
+        # if lvl == -1:  #if lvl is -1, then symbol is on LHS of equals
+        #     node_trace['textposition'] += 'middle left'
+        # else:
+        #     node_trace['textposition'] += 'bottom center'
 
     traceRecode.append(node_trace)
 

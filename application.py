@@ -81,22 +81,29 @@ page_1_layout = html.Div(id='page1',style={'backgroundColor': colors['background
     html.Button(id='submit-val', n_clicks=0, children='Submit'),
     html.Hr(),
     ############## Options ############################################
-    html.H4(id='page1-H4', children="Options", style={'color': colors['text']}),
+    html.Button(id='hide_or_show_opts-val', n_clicks=0, children='Show Options'),
     html.Br(),
-    ############## Light or Dark Theme Selector #######################
-    dcc.RadioItems(id='light-dark-theme',
-        options=[{'label': i, 'value': i} for i in ['Light', 'Dark']],
-        value='Light',
-        labelStyle={'display': 'inline-block'},
-        style={'color': colors['text'], 'backgroundColor': colors['background']}),
-    html.Br(),
-    ############## New, added 1-4-2020 #######################
-    dcc.RadioItems(id='fxn-option',
-        options=[{'label': i, 'value': i} for i in ['Map symbols to functions',\
+    html.Section(id='page1-Options',title="Options", hidden=True,
+                 style={'color': colors['text'],'backgroundColor': colors['background']},
+        children = [
+            html.H4(id='page1-H4', children="Options", style={'color': colors['text'],
+                                                              'backgroundColor': colors['background']}),
+            #html.Br(),
+            ############## Light or Dark Theme Selector #######################
+            dcc.RadioItems(id='light-dark-theme',
+                options=[{'label': i, 'value': i} for i in ['Light', 'Dark']],
+                value='Light',
+                labelStyle={'display': 'inline-block'},
+                style={'color': colors['text'], 'backgroundColor': colors['background']}),
+            #html.Br(),
+            ############## New, added 1-4-2020 #######################
+            dcc.RadioItems(id='fxn-option',
+                options=[{'label': i, 'value': i} for i in ['Map symbols to functions',\
                                                     'Do not map symbols to functions']],
-        value='Do not map symbols to functions',
-        labelStyle={'display': 'inline-block'},
-        style={'color': colors['text'], 'backgroundColor': colors['background']}),
+                value='Do not map symbols to functions',
+                labelStyle={'display': 'inline-block'},
+                style={'color': colors['text'], 'backgroundColor': colors['background']})],
+        ),
     html.Hr(),
     ############## Graph of the graph here ############################
     dcc.Graph(id='page-1-graph', figure=graphEquations(myText)),
@@ -155,9 +162,9 @@ def update_graph(n_clicks,lightOrDarkSelection,fxnOptionSelection,input_value):
 
 how_to_markdown_text = '''
 ### Description
-Equation Symbol Visualization is a [__dash app__](http://dash.plotly.com) created to create a visual representation of information 
-flow for systems of equations. It is presumed that the leftmost symbol on the left hand side of the equation represents 
-assignment.
+Equation Symbol Visualization is a [__dash app__](http://dash.plotly.com) created to create a visual representation of 
+information flow for systems of equations. It is presumed that the leftmost symbol on the left hand side of the equation
+represents assignment.
 
 ### Usage
 
@@ -279,6 +286,16 @@ def lightDarkSelector(lightOrDarkSelection):
                     'color': localColors['text'],
                     'backgroundColor': localColors['background']}
     return localStyles
+
+@my_app.callback([dash.dependencies.Output('page1-Options', 'hidden'),
+                  dash.dependencies.Output('hide_or_show_opts-val','children')],
+                [dash.dependencies.Input('hide_or_show_opts-val', 'n_clicks')])
+def page_1_hide_or_show_options(n_clicks):
+    if ( n_clicks%2 != 0 ):
+        return [False,'Hide Options']
+    else:
+        return [True,'Show Options']
+
 
 if __name__ == '__main__':
     my_app.run_server(debug=True)

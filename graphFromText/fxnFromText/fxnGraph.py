@@ -434,6 +434,9 @@ of texts which have already been split by the '=' sign previously.
 
 Options are 'l' for including level and 'n' for line number in the each tuple
 entry of the symbol graph.
+
+Nodes/vertices of the graph are formatted like:
+('a_symbol', idx, 'fxn' or 'data, level, equation_number)
 '''
 def getSymbolGraphMulti(leftHandLinesOfText,rightHandLinesOfText,opts='vn'):
     # listOfArgs=[]

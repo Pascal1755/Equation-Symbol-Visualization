@@ -309,7 +309,6 @@ def graphByEqualsFxn1(Text):
     for k, eq in enumerate(listOfEquations):
 
         result = re.split(r'={1}', eq)  # split into LHS and RHS by exactly one equals sign
-        inputError = None
 
         # Left Hand Side (LHS) is every word to the left of exactly one equals sign
         # Right Hand Side (RHS) is every word to the right of exactly one equals sign
@@ -351,7 +350,9 @@ def graphByEqualsFxn1(Text):
                 elif char == ')':
                     parenCnt-=1
             if ( parenCnt != 0 ):
-                inputError = ValueError('\nunbalanced parenthesis:\n' + expr)
+                inputError = ValueError('\nunbalanced parenthesis:\n' + eq)
+                # issue with error message fix, 4/11/2021
+                #inputError = ValueError('\nunbalanced parenthesis:\n' + expr)
 
             ###### special case for numbers only on RHS ######
             #if (len(result[1]) != 0 and len(RHS) == 0):
